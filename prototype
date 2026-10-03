@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>Voice Investment Companion</title>
+<title>Suno-Invest</title>
 <style>
 :root{--bg:#0b1f3f;--fg:#fff4c2;--ac:#ffd23f;--ink:#0b1f3f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -28,7 +28,7 @@ details{margin-top:.5rem}summary{cursor:pointer;min-height:2.5rem}
 </style></head><body>
 <button id="start" class="big" aria-label="Start voice assistant. It speaks a short menu, then listens for your commands.">Start voice assistant</button>
 <a class="skip" href="#main">Skip to main content</a>
-<header><h1>Voice Investment Companion</h1>
+<header><h1>Suno-Invest</h1>
 <p class="note">Prototype with simulated data. Educational summaries only, not financial advice. No real trades.</p>
 <p class="note">Keyboard shortcuts: S speak a command, R repeat the last answer, H help, Escape stop speaking.</p></header>
 <main id="main">
