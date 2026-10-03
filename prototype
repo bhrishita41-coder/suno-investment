@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Voice Investment Companion</title>
+<style>
+:root{--bg:#0b1f3f;--fg:#fff4c2;--ac:#ffd23f;--ink:#0b1f3f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:1.3rem/1.5 Georgia,'Times New Roman',serif;padding:1.2rem;max-width:46rem;margin-inline:auto}
+h1{font-size:2rem;margin:0 0 .3rem}h2{font-size:1.4rem;margin:.2rem 0 .5rem}
+.note{font-size:1rem}
+button,select{font:inherit;min-height:3rem;border-radius:.4rem;margin:.3rem .3rem .3rem 0;padding:.6rem 1rem;cursor:pointer}
+button{color:var(--ink);background:var(--ac);border:3px solid var(--ac)}
+button.alt{background:transparent;color:var(--fg);border-color:var(--fg)}
+button[aria-disabled=true]{opacity:.55}
+select{background:#fff;color:#000;border:2px solid var(--fg)}
+:focus-visible{outline:4px solid #fff;outline-offset:3px}
+textarea,input[type=text]{width:100%;box-sizing:border-box;font:inherit;padding:.6rem;background:#fff;color:#000;border:2px solid var(--fg)}
+textarea{min-height:6rem}
+section{border-top:2px solid var(--fg);margin-top:1.2rem;padding-top:.7rem}
+table{border-collapse:collapse;width:100%;font-size:1.1rem;margin-top:.5rem}
+th,td{border:2px solid var(--fg);padding:.4rem;text-align:left}
+details{margin-top:.5rem}summary{cursor:pointer;min-height:2.5rem}
+#out{border:3px solid var(--ac);padding:1rem;min-height:4rem;margin-top:1.2rem;position:sticky;bottom:.5rem;background:var(--bg)}
+.skip{position:absolute;left:-999px}.skip:focus{left:1rem;top:1rem;background:var(--ac);color:var(--ink);padding:.6rem;z-index:9}
+[hidden]{display:none!important}
+.big{display:block;width:100%;min-height:6rem;font-size:1.8rem;margin:0 0 1rem}
+</style></head><body>
+<button id="start" class="big" aria-label="Start voice assistant. It speaks a short menu, then listens for your commands.">Start voice assistant</button>
+<a class="skip" href="#main">Skip to main content</a>
+<header><h1>Voice Investment Companion</h1>
+<p class="note">Prototype with simulated data. Educational summaries only, not financial advice. No real trades.</p>
+<p class="note">Keyboard shortcuts: S speak a command, R repeat the last answer, H help, Escape stop speaking.</p></header>
+<main id="main">
+<section aria-labelledby="hs"><h2 id="hs">Settings and demo guide</h2>
+<p><label for="prof">Investor profile</label> <select id="prof"></select></p>
+<button id="mic" aria-label="Speak a command. Say summary, what changed, explain my risk, explain fund, chart, or sell.">Speak a command</button>
+<button class="alt" id="stop" aria-label="Stop the spoken audio">Stop speaking</button>
+<button class="alt" id="micCheck" aria-label="Enable and test microphone access">Enable microphone</button>
+<p><label for="rate">Voice speed</label> <input type="range" id="rate" min="0.7" max="1.5" step="0.1" value="1"></p>
+<p><input type="checkbox" id="sr"> <label for="sr">Screen reader mode: the app will not speak aloud, so TalkBack or VoiceOver reads the results instead</label></p>
+<button id="demo" class="alt" aria-label="Guided demo. Each press runs the next step of the demo flow.">Guided demo: step 1 of 7</button></section>
+
+<section aria-labelledby="hp"><h2 id="hp">Portfolio</h2>
+<button data-do="summary" aria-label="Hear a short portfolio summary">Short summary</button>
+<button data-do="detailed" aria-label="Hear a detailed summary of all three funds">Detailed summary</button>
+<button data-do="changes" aria-label="Hear what changed in each fund today">What changed today</button>
+<button data-do="risk" aria-label="Hear which investment has the highest risk">Explain my risk</button></section>
+
+<section aria-labelledby="hf"><h2 id="hf">Fund explainer and chart</h2>
+<p><label for="fund">Choose a fund</label> <select id="fund"></select></p>
+<button id="exp" aria-label="Explain the selected fund in simple words">Explain this fund simply</button>
+<button id="cht" aria-label="Describe the selected fund's six month chart in words">Describe chart in words</button>
+<details><summary>Text table of the chart</summary><table id="tbl"></table></details></section>
+
+<section aria-labelledby="hc"><h2 id="hc">SafeConfirm: sell 25,000 rupees from Equity Growth Fund</h2>
+<button data-do="preview" aria-label="Preview the sale. This is a preview only and places no order.">Preview sale</button>
+<p><label for="phrase">Confirmation phrase. Type it or speak it.</label>
+<input type="text" id="phrase" autocomplete="off"></p>
+<button id="confirm" aria-disabled="true" aria-label="Confirm the demo sale. Preview the sale first.">Confirm demo sale</button>
+<button class="alt" id="cancel" aria-label="Cancel the sale. Nothing will be sold.">Cancel</button>
+<button id="undo" hidden aria-label="Undo the demo sale within ten seconds">Undo (10 seconds)</button></section>
+
+<section aria-labelledby="hm"><h2 id="hm">Scam Shield</h2>
+<label for="msg">Suspicious message</label>
+<textarea id="msg"></textarea>
+<button id="scan" aria-label="Check this message for common scam warning signs">Check message</button>
+<button class="alt" id="s1">Load scam example</button>
+<button class="alt" id="s2">Load safe example</button></section>
+<section aria-labelledby="hv"><h2 id="hv">Voice comments</h2>
+<p class="note">Recording starts only when you press Start, and a short beep marks the start and stop. Audio stays in this tab and is not uploaded.</p>
+<button id="rec" aria-label="Start recording a voice comment">Start recording</button>
+<button id="recStop" class="alt" hidden aria-label="Stop recording">Stop recording</button>
+<p><label for="ctext">Comment text. It fills in as you speak, or you can type.</label>
+<textarea id="ctext"></textarea></p>
+<button id="csave" aria-label="Save this comment">Save comment</button>
+<ul id="clist" aria-label="Saved comments"></ul></section>
+</main>
+<div id="out" role="status" aria-live="polite" aria-atomic="true">Press a button or tap Speak a command to begin.</div>
+<script>
+const M=["Apr","May","Jun","Jul","Aug","Sep"],H=a=>Object.fromEntries(M.map((m,i)=>[m,a[i]]));
+const AB={eq:"mostly invests in company shares. Its price can swing a lot, so it suits money you will not need for many years.",hy:"mixes shares and bonds to smooth out the ups and downs.",db:"lends money to governments and companies. It moves less, but it is not risk free."};
+const F=(n,d,risk,exit,about,h)=>({n,v:h[5],d,risk,exit,about,h:H(h)});
+const EQN="Equity Growth Fund",HYN="Balanced Hybrid Fund",DBN="Stable Debt Fund";
+const P=[
+{label:"Ananya: retirement, 19 years left",user:{name:"Ananya",goal:"retirement in 2045",years:19},sale:{fund:0,amount:25000},
+ funds:[F(EQN,800,"high",1,AB.eq,[58000,56200,59500,60800,59600,62500]),F(HYN,200,"medium",.5,AB.hy,[35800,36100,36400,36900,37000,37300]),F(DBN,100,"low",0,AB.db,[24200,24350,24500,24700,24850,25000])]},
+{label:"Ravi: retired, steady income, 3 years",user:{name:"Ravi",goal:"steady income and an emergency fund",years:3},sale:{fund:2,amount:40000},
+ funds:[F(EQN,-450,"high",1,AB.eq,[17000,16200,16800,16100,15800,15000]),F(HYN,-300,"medium",.5,AB.hy,[46500,46200,46800,45900,45600,45000]),F(DBN,150,"low",0,AB.db,[77500,78000,78400,79000,79500,80000])]},
+{label:"Meena: first-time investor, 25 years",user:{name:"Meena",goal:"learning to invest and slowly building wealth",years:25},sale:{fund:0,amount:2000},
+ funds:[F(EQN,180,"high",1,AB.eq,[7800,8100,7600,8400,8700,9000]),F(HYN,40,"medium",.5,AB.hy,[5600,5700,5750,5850,5900,6000]),F(DBN,10,"low",0,AB.db,[2850,2880,2920,2950,2975,3000])]}];
+const D={user:P[0].user,funds:P[0].funds,scams:["URGENT! Secret tip: guaranteed return of 40% in 7 days. Act now and send your OTP to activate.",
+"Your monthly statement for Balanced Hybrid Fund is ready to view in the official app."]};
+let AMOUNT=P[0].sale.amount,EQ=D.funds[P[0].sale.fund];
+const fmt=n=>Math.round(n).toLocaleString('en-IN');
+const need=()=>"I confirm the redemption of "+fmt(AMOUNT)+" rupees";
+const W1=["","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"],W10=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+const thou=n=>{const k=Math.round(n/1000);return(k<20?W1[k]:W10[Math.floor(k/10)]+W1[k%10])+"thousand"};
+const greet=(h=new Date().getHours())=>h>=5&&h<12?"Good morning":h>=12&&h<17?"Good afternoon":h>=17&&h<21?"Good evening":"Hello";
+const dayTotal=()=>D.funds.reduce((a,f)=>a+f.d,0);
+const total=()=>D.funds.reduce((a,f)=>a+f.v,0);
+const inr=n=>n>=100000?(n/100000).toFixed(2)+" lakh rupees":fmt(n)+" rupees";
+const L={
+summary(detail){const t=total(),d=dayTotal();let s=`${greet()}, ${D.user.name}. Your portfolio is worth ${inr(t)}. It changed by ${fmt(Math.abs(d))} rupees today, ${(Math.abs(d)/(t-d)*100).toFixed(1)} percent ${d>=0?'up':'down'}. ${d>=0?'This is a small daily movement.':'This is a daily change, not a final loss. Your stated goal is '+D.user.goal+'.'}`;
+ if(detail)s+=" "+D.funds.map(f=>`${f.n}: ${fmt(f.v)} rupees, ${f.risk} risk.`).join(" ");return s},
+detailed(){return L.summary(true)},
+changes(){return "Based on available data, today: "+D.funds.map(f=>`${f.n} ${f.d>=0?'rose':'fell'} ${Math.abs(f.d)} rupees.`).join(" ")},
+risk(){const r={low:1,medium:2,high:3},t=D.funds.reduce((a,b)=>r[b.risk]>r[a.risk]?b:a);
+ return `Your highest-risk investment is ${t.n}. High risk means its value can move up and down a lot. Past returns do not guarantee future results.`},
+explain(f){return `${f.n} ${f.about} Risk level: ${f.risk}. `+(f.exit?`If you sell early, an exit charge of about ${f.exit} percent may apply. `:"This demo data shows no exit charge. ")+"This is an educational summary, not financial advice."},
+chart(f){const m=Object.keys(f.h),v=Object.values(f.h),o=(v.at(-1)-v[0])/v[0]*100,falls=[];
+ for(let i=1;i<v.length;i++)if(v[i]<v[i-1])falls.push([m[i],(v[i-1]-v[i])/v[i-1]*100]);
+ const sw=(Math.max(...v)-Math.min(...v))/Math.min(...v)*100,tr=(sw>8||falls.length>=2)?(o<0?"falling with some ups and downs":"volatile"):o>0?"steadily rising":"falling";
+ return `Over the last ${v.length} months, ${f.n} moved ${o>=0?'+':''}${o.toFixed(1)} percent overall and looks ${tr}. `+(falls.length?"Notable falls: "+falls.map(([a,p])=>`${p.toFixed(1)} percent in ${a}`).join(", ")+". ":"It had no monthly falls. ")+"Based on the available data. Past returns do not guarantee future results."},
+preview(){const sh=AMOUNT/EQ.v*100,fee=AMOUNT*EQ.exit/100;let w="";
+ if(sh>=40)w+="This is much larger than a usual transaction. ";
+ if(D.user.years>10&&EQ.risk==="high"&&sh>=40)w+=`Your goal is ${D.user.goal}, so selling this much may conflict with it. `;
+ if(D.user.years<=5&&EQ.risk==="low"&&sh>=40)w+=`This is your safest holding, and your goal is ${D.user.goal}. Selling this much leaves less steady money. `;
+ if(!w)w="No unusual size or goal conflict was found. ";
+ return `Preview only, not a confirmed transaction. You are about to redeem ${fmt(AMOUNT)} rupees from ${EQ.n}. That is ${sh.toFixed(0)} percent of this holding. `+(fee?`Estimated exit charge: ${fmt(fee)} rupees. `:"No exit charge is shown in this demo data. ")+`${w}To confirm, say or type: ${need()}. Then press Confirm demo sale. Or press Cancel.`},
+verify(t){const s=t.toLowerCase().replace(/[, \-]/g,"");return s.includes("iconfirm")&&s.includes("redemption")&&(s.includes(String(AMOUNT))||s.includes(thou(AMOUNT)))},
+scam(msg){const F={"guaranteed return":"No genuine investment can guarantee returns.","act now":"Scammers create urgency so you do not think carefully.","send money":"Never send money under pressure.","otp":"No genuine institution will ask for your OTP.","pin":"No genuine institution will ask for your PIN.","secret tip":"Real investments are not secret tips.","double your money":"Unrealistic profit claims are a classic scam sign."};
+ const t=msg.toLowerCase(),w=new Set(t.match(/[a-z]+/g)||[]),f=Object.entries(F).filter(([k])=>k.includes(" ")?t.includes(k):w.has(k));
+ return f.length?`I found ${f.length} common warning sign${f.length>1?'s':''}. ${f.map(x=>x[1]).join(" ")} Verify with an official source before acting.`:"I did not find common warning signs, but that does not mean it is safe."}};
+// ---- interface ----
+const $=id=>document.getElementById(id),out=$('out');
+const selFund=()=>D.funds[$('fund').selectedIndex];
+let lastSpoken="",blind=false,recording=false,listening=false,noHear=0,sayId=0;
+function say(t,cb){lastSpoken=t;out.textContent=t;if($('sr').checked){cb&&cb();return}
+ try{speechSynthesis.cancel();const id=++sayId,u=new SpeechSynthesisUtterance(t);u.rate=+$('rate').value;u.onend=()=>{if(id!==sayId)return;cb?cb():after()};speechSynthesis.speak(u)}catch(e){cb&&cb()}}
+function after(){if(!blind||recording||listening)return;if(speechSynthesis.speaking||speechSynthesis.pending)return;setTimeout(listen,300)}
+D.funds.forEach(f=>$('fund').add(new Option(f.n)));
+function table(){const f=selFund(),m=Object.keys(f.h),v=Object.values(f.h);
+ $('tbl').innerHTML=`<caption>${f.n}, monthly value in rupees</caption><tr><th scope="col">Month</th><th scope="col">Value</th><th scope="col">Change from previous month</th></tr>`+
+ m.map((x,i)=>`<tr><th scope="row">${x}</th><td>${fmt(v[i])}</td><td>${i?((v[i]-v[i-1])/v[i-1]*100).toFixed(1)+' percent':'start'}</td></tr>`).join("")}
+$('fund').onchange=table;table();
+let previewed=false,timer;
+const gate=on=>{previewed=on;$('confirm').setAttribute('aria-disabled',!on)};
+document.querySelectorAll('[data-do]').forEach(b=>b.onclick=()=>{const k=b.dataset.do;if(k==='preview')gate(true);say(L[k]())});
+$('exp').onclick=()=>say(L.explain(selFund()));
+$('cht').onclick=()=>say(L.chart(selFund()));
+$('stop').onclick=()=>{try{speechSynthesis.cancel()}catch(e){}};
+$('scan').onclick=()=>say(L.scam($('msg').value));
+$('s1').onclick=()=>{$('msg').value=D.scams[0];say("Scam example loaded. Press Check message.")};
+$('s2').onclick=()=>{$('msg').value=D.scams[1];say("Safe example loaded. Press Check message.")};
+$('confirm').onclick=()=>{
+ if(!previewed){say("Please preview the sale first. Nothing was sold.");return}
+ if(!L.verify($('phrase').value)){say("I heard: "+($('phrase').value||"nothing")+". I need: "+need()+". Nothing was sold.");return}
+ gate(false);$('undo').hidden=false;
+ const secs=blind?30:10;
+ say(`Confirmed. This is a demo transaction, and no real money moved. You have ${secs} seconds. Say undo, or press Undo.`);
+ clearTimeout(timer);cd.forEach(clearTimeout);cd=[];
+ if(blind)[10,20,25].forEach(x=>cd.push(setTimeout(()=>{if(!$('undo').hidden)say(`${secs-x} seconds left to undo.`)},x*1000)));
+ timer=setTimeout(()=>{$('undo').hidden=true;if(blind)say("Undo window closed. The demo sale stays confirmed.");else out.textContent="Undo window closed. Demo transaction stays confirmed."},secs*1000)};
+$('undo').onclick=()=>{clearTimeout(timer);cd.forEach(clearTimeout);$('undo').hidden=true;$('phrase').value='';say("Undone. The demo sale was reversed.")};
+$('cancel').onclick=()=>{$('phrase').value='';gate(false);awaitYes=false;say("Cancelled. Nothing was sold.")};
+$('msg').value=D.scams[0];
+const steps=[["Short summary",()=>say(L.summary())],["Chart in words",()=>{$('fund').selectedIndex=D.funds.indexOf(EQ);table();say(L.chart(EQ))}],["Preview the sale",()=>{gate(true);say(L.preview())}],
+["Confirm phrase",()=>{$('phrase').value=need();say("Phrase entered. Now press Confirm demo sale, or run the next step.")}],
+["Confirm sale",()=>$('confirm').click()],["Scam example",()=>{$('msg').value=D.scams[0];say(L.scam(D.scams[0]))}],["Safe example",()=>{$('msg').value=D.scams[1];say(L.scam(D.scams[1]))}]];
+let si=0;const dl=()=>{$('demo').textContent=`Guided demo: step ${si+1} of ${steps.length}`;$('demo').setAttribute('aria-label',`Guided demo. Next: ${steps[si][0]}. Step ${si+1} of ${steps.length}.`)};
+$('demo').onclick=()=>{steps[si][1]();si=(si+1)%steps.length;dl()};
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const routes=[['detail','detailed'],['summary','summary'],['change','changes'],['risk','risk'],['chart','cht'],['fund','exp'],['simply','exp'],['sell','preview'],['redeem','preview']];
+const HELP=()=>"You can say: summary, detailed summary, what changed, explain my risk, explain fund, chart, sell, comment, repeat, or help. Say switch to change investor. After a sale preview, say: "+need()+". You can also say cancel or undo. Press S to speak, R to repeat, H for help.";
+let awaitYes=false,recTimer,cd=[];
+function handle(t){noHear=0;
+ if(awaitYes){awaitYes=false;if(/\byes\b/.test(t))$('confirm').click();else $('cancel').click();return}
+ const pi=P.findIndex(x=>t.includes(x.user.name.toLowerCase()));
+ if(pi>=0||t.includes('switch')||t.includes('next investor')||t.includes('next profile')){useProfile(pi>=0?pi:($('prof').selectedIndex+1)%P.length,true);return}
+ if(t.includes('turn off')||t.includes('stop listening')){blind=false;out.setAttribute('aria-live','polite');say("Voice assistant is off. Press the Start button to turn it on again.");return}
+ if(t.includes('repeat')||t.includes('say again')){say(lastSpoken);return}
+ if(t.includes('help')||t.includes('what can i say')){say(HELP());return}
+ if(t.includes('comment')||t.includes('record')){say("After the beep, speak your comment. Recording stops after 60 seconds, or press S.",startRec);return}
+ if(t.includes('i confirm')){$('phrase').value=t;
+  if(!previewed){say("Please preview the sale first. Say sell.");return}
+  if(!L.verify(t)){say("I heard: "+t+". I need: "+need()+". Say it again, or say cancel.");return}
+  if(blind){awaitYes=true;say("I heard the confirmation phrase. Say yes to place the demo sale, or say cancel.")}else $('confirm').click();return}
+ if(t.includes('undo')){$('undo').click();return}
+ if(t.includes('cancel')){$('cancel').click();return}
+ const h=routes.find(x=>t.includes(x[0]));
+ if(!h){say("Sorry, I heard "+t+". Say help to hear what you can say.");return}
+ if(h[1]==='cht'||h[1]==='exp')$(h[1]).click();else if(h[1]==='preview'){gate(true);say(L.preview())}else say(L[h[1]]())}
+function listen(){
+ if(!SR){if(!blind)say("Voice input needs Chrome. You can use the buttons instead.");return}
+ if(listening||recording)return;
+ const r=new SR();r.lang='en-IN';listening=true;let got=false;
+ r.onresult=e=>{got=true;handle(e.results[0][0].transcript.toLowerCase())};
+ r.onerror=()=>{};
+ r.onend=()=>{listening=false;if(got)return;
+  if(blind&&++noHear<3){beep(220);after()}
+  else if(blind)say("I could not hear you. Press S or the Start button when you want me to listen again.",()=>{});
+  else say("I could not hear you. Please type or use the buttons.")};
+ beep(880);try{r.start()}catch(e){listening=false}}
+$('mic').onclick=()=>{noHear=0;listen()};
+$('start').onclick=async()=>{blind=true;$('sr').checked=false;out.setAttribute('aria-live','off');
+ let ok=true;try{const m=await navigator.mediaDevices.getUserMedia({audio:true});m.getTracks().forEach(x=>x.stop())}catch(e){ok=false}
+ $('start').textContent="Voice assistant is on. Press to hear help again.";
+ say("Voice assistant is on. "+(ok?"":"The microphone is blocked, so use the keyboard or the buttons. ")+HELP()+" I will listen after each answer.")};
+document.addEventListener('keydown',e=>{
+ if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;
+ const k=e.key.toLowerCase();
+ if(k==='escape'){speechSynthesis.cancel();return}
+ if(k==='s'){e.preventDefault();if(recording)stopRec();else{noHear=0;speechSynthesis.cancel();listen()}}
+ else if(k==='r')say(lastSpoken);else if(k==='h')say(HELP())});
+// ---- profiles ----
+function useProfile(i,announce){const p=P[i];D.user=p.user;D.funds=p.funds;EQ=D.funds[p.sale.fund];AMOUNT=p.sale.amount;
+ $('prof').selectedIndex=i;$('fund').textContent="";D.funds.forEach(f=>$('fund').add(new Option(f.n)));$('fund').selectedIndex=p.sale.fund;table();
+ $('hc').textContent=`SafeConfirm: sell ${fmt(AMOUNT)} rupees from ${EQ.n}`;
+ document.querySelector('[data-do=preview]').setAttribute('aria-label',`Preview selling ${fmt(AMOUNT)} rupees from ${EQ.n}. This is a preview only and places no order.`);
+ gate(false);awaitYes=false;$('phrase').value="";$('undo').hidden=true;clearTimeout(timer);cd.forEach(clearTimeout);cd=[];
+ if(announce)say(`Switched to ${p.user.name}. `+L.summary())}
+P.forEach(p=>$('prof').add(new Option(p.label)));$('prof').onchange=()=>useProfile($('prof').selectedIndex,true);
+// ---- voice comments ----
+let mr,stream,tr,chunks=[],audioUrl=null,comments=[];
+function beep(f){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.frequency.value=f;o.connect(c.destination);o.start();setTimeout(()=>{o.stop();c.close()},180)}catch(e){}}
+function note(t){out.textContent=t}
+function renderComments(){const ul=$('clist');ul.textContent="";comments.forEach((c,i)=>{const li=document.createElement('li');
+ const p=document.createElement('p');p.textContent=`${c.time}: ${c.text||'(audio only)'}`;li.appendChild(p);
+ if(c.url){const a=document.createElement('audio');a.controls=true;a.src=c.url;a.setAttribute('aria-label','Play comment '+(i+1));li.appendChild(a)}
+ const b=document.createElement('button');b.className='alt';b.textContent='Delete';b.setAttribute('aria-label','Delete comment '+(i+1));
+ b.onclick=()=>{comments.splice(i,1);persist();renderComments();note('Comment deleted.');$('rec').focus()};li.appendChild(b);ul.appendChild(li)})}
+function persist(){try{localStorage.setItem('vic_comments',JSON.stringify(comments.map(c=>({text:c.text,time:c.time}))))}catch(e){}}
+try{comments=JSON.parse(localStorage.getItem('vic_comments')||'[]');renderComments()}catch(e){}
+async function startRec(){
+ if(!navigator.mediaDevices||!window.MediaRecorder){note("Recording is not supported here. Please type your comment.");$('ctext').focus();return}
+ speechSynthesis.cancel();
+ try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}catch(e){note("Microphone access was blocked. Please type your comment instead.");$('ctext').focus();return}
+ chunks=[];mr=new MediaRecorder(stream);mr.ondataavailable=e=>chunks.push(e.data);
+ mr.onstop=()=>{stream.getTracks().forEach(t=>t.stop());audioUrl=URL.createObjectURL(new Blob(chunks,{type:mr.mimeType}))};
+ mr.start();recording=true;if(blind)recTimer=setTimeout(stopRec,60000);
+ if(SR){tr=new SR();tr.lang='en-IN';tr.continuous=true;tr.interimResults=false;
+  tr.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)$('ctext').value+=(($('ctext').value?' ':'')+e.results[i][0].transcript)};
+  tr.onerror=()=>{};try{tr.start()}catch(e){}}
+ beep(880);$('rec').hidden=true;$('recStop').hidden=false;$('recStop').focus();
+ note("Recording. Speak your comment, then press Stop recording.")}
+function stopRec(){recording=false;clearTimeout(recTimer);try{mr&&mr.state!=='inactive'&&mr.stop();tr&&tr.stop()}catch(e){}
+ beep(440);$('recStop').hidden=true;$('rec').hidden=false;$('csave').focus();
+ note("Recording stopped. Check the comment text, then press Save comment.");if(blind)setTimeout(()=>$('csave').click(),500)}
+$('micCheck').onclick=async()=>{
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){note("This browser or page cannot use the microphone. Open the page in Chrome in its own tab.");return}
+ try{const s=await navigator.mediaDevices.getUserMedia({audio:true});s.getTracks().forEach(t=>t.stop());beep(660);
+  note("Microphone is on and ready. You can now use Speak a command and Start recording.")}
+ catch(e){note(e.name==='NotFoundError'?"No microphone was found. Connect one and try again.":
+  "Microphone access is blocked. Click the lock or settings icon next to the web address, set Microphone to Allow, then reload and press this button again. If it still fails, open the page in its own Chrome tab.")}};
+$('rec').onclick=startRec;$('recStop').onclick=stopRec;
+$('csave').onclick=()=>{const text=$('ctext').value.trim();if(!text&&!audioUrl){say("There is nothing to save yet. Record or type a comment first.");return}
+ comments.push({text,url:audioUrl,time:new Date().toLocaleTimeString()});audioUrl=null;$('ctext').value="";persist();renderComments();
+ say("Comment saved. You now have "+comments.length+(comments.length>1?" comments.":" comment."))};
+</script></body></html>
